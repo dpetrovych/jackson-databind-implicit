@@ -1,5 +1,7 @@
 # Jackson Implicit Polymorphic Type Handling (PTH)
 
+[![Build Status](https://travis-ci.com/dpetrovych/jackson-databind-implicit.svg?branch=master)](https://travis-ci.com/dpetrovych/jackson-databind-implicit)
+
 ## Usage
 
 ```java
