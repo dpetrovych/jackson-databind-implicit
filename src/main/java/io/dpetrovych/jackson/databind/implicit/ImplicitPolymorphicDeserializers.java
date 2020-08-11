@@ -19,29 +19,34 @@ public class ImplicitPolymorphicDeserializers extends Deserializers.Base {
             DeserializationConfig deserializationConfig,
             BeanDescription beanDescription) throws JsonMappingException {
 
-        Class<?> rawClass = javaType.getRawClass();
+        Class<?> valueType = javaType.getRawClass();
 
-        JsonImplicitTypes implicitTypesAnnotation = rawClass.getAnnotation(JsonImplicitTypes.class);
-        if (implicitTypesAnnotation == null)
+        if (!hasDeserializerFor(deserializationConfig, valueType))
             return null;
 
-        JsonSubTypes subTypesAnnotation = rawClass.getAnnotation(JsonSubTypes.class);
+        JsonSubTypes subTypesAnnotation = valueType.getAnnotation(JsonSubTypes.class);
         if (subTypesAnnotation == null)
             throw new JsonMappingException(null,
                     String.format("@%s annotation require @%s for type: %s",
                             JsonImplicitTypes.class.getSimpleName(),
                             JsonSubTypes.class.getSimpleName(),
-                            rawClass.getName()));
+                            valueType.getName()));
 
         Collection<BeanDescription> typeDescriptions = Arrays.stream(subTypesAnnotation.value())
                 .map(type -> toBeanDescription(deserializationConfig, type.value()))
                 .collect(Collectors.toList());
 
-        return new ImplicitPolymorphicDeserializer<>(typeDescriptions, javaType, rawClass);
+        return new ImplicitPolymorphicDeserializer<>(typeDescriptions, javaType, valueType);
     }
 
     private BeanDescription toBeanDescription(DeserializationConfig config, Class<?> clz) {
         JavaType javaType = config.getTypeFactory().constructType(clz);
         return config.introspect(javaType);
+    }
+
+    @Override
+    public boolean hasDeserializerFor(DeserializationConfig config, Class<?> valueType) {
+        JsonImplicitTypes implicitTypesAnnotation = valueType.getAnnotation(JsonImplicitTypes.class);
+        return implicitTypesAnnotation != null;
     }
 }
