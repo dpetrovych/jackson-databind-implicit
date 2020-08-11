@@ -12,4 +12,20 @@ public abstract class Base {
                 .registerModule(new ImplicitPolymorphismTypeHandleModule())
                 .setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     }
+
+    protected String formatJsonArray(String... examples) {
+        if (examples == null)
+            return null;
+
+        int iMax = examples.length - 1;
+        StringBuilder builder = new StringBuilder();
+        builder.append('[');
+        for (int i = 0; ; i++) {
+            builder.append(examples[i]);
+            if (i == iMax)
+                return builder.append(']').toString();
+            builder.append(",");
+        }
+    }
 }
+

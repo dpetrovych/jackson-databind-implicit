@@ -7,12 +7,16 @@ import io.dpetrovych.jackson.databind.implicit.JsonImplicitTypes;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class BasicPojoTests extends Base {
+public class BasicPojoTests extends BaseCanDeserialize<BasicPojoTests.Reward> {
+    @Override
+    protected TypeReference<Reward[]> deserializeType() {
+        return new TypeReference<Reward[]>() {};
+    }
+
     @JsonImplicitTypes
     @JsonSubTypes({
             @JsonSubTypes.Type(value = FixedReward.class),
@@ -27,27 +31,25 @@ public class BasicPojoTests extends Base {
         public int min, max;
     }
 
-    private final ArrayList<Reward> rewardsExample = new ArrayList<Reward>() {
-        {
-            add(new FixedReward() {{value=40;}});
-            add(new VariableReward() {{min=35; max=45;}});
-        }
-    };
-
-    @Test
-    public void serialize() throws IOException {
-        String json = mapper.writeValueAsString(rewardsExample);
-
-        assertThat(json).isEqualTo("[{\"value\":40},{\"min\":35,\"max\":45}]");
+    @Override
+    protected Reward[] getExamples() {
+        return new Reward[]{
+                new FixedReward() {{
+                    value = 40;
+                }},
+                new VariableReward() {{
+                    min = 35;
+                    max = 45;
+                }},
+        };
     }
 
-    @Test
-    public void deserialize() throws IOException {
-        String json = "[{\"value\":40},{\"min\":35,\"max\":45}]";
-
-        ArrayList<Reward> rewards = mapper.readValue(json, new TypeReference<ArrayList<Reward>>() {});
-
-        assertThat(rewards).usingRecursiveComparison().isEqualTo(rewardsExample);
+    @Override
+    protected String[] getExamplesJson() {
+        return new String[]{
+                "{\"value\":40}",
+                "{\"min\":35,\"max\":45}"
+        };
     }
 
     @Test

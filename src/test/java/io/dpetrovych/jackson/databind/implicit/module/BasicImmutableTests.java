@@ -5,14 +5,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.dpetrovych.jackson.databind.implicit.JsonImplicitTypes;
-import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.util.ArrayList;
+public class BasicImmutableTests extends BaseCanDeserialize<BasicImmutableTests.Reward> {
+    @Override
+    protected TypeReference<Reward[]> deserializeType() {
+        return new TypeReference<Reward[]>() {};
+    }
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-public class BasicImmutableTests extends Base {
     @JsonImplicitTypes
     @JsonSubTypes({
             @JsonSubTypes.Type(value = FixedReward.class),
@@ -50,26 +49,19 @@ public class BasicImmutableTests extends Base {
         }
     }
 
-    private final ArrayList<Reward> rewardsExample = new ArrayList<Reward>() {
-        {
-            add(new FixedReward(40));
-            add(new VariableReward(35, 45));
-        }
-    };
-
-    @Test
-    public void serialize() throws IOException {
-        String json = mapper.writeValueAsString(rewardsExample);
-
-        assertThat(json).isEqualTo("[{\"value\":40},{\"min\":35,\"max\":45}]");
+    @Override
+    protected Reward[] getExamples() {
+        return new Reward[]{
+                new FixedReward(40),
+                new VariableReward(35, 45),
+        };
     }
 
-    @Test
-    public void deserialize() throws IOException {
-        String json = "[{\"value\":40},{\"min\":35,\"max\":45}]";
-
-        ArrayList<Reward> rewards = mapper.readValue(json, new TypeReference<ArrayList<Reward>>() {});
-
-        assertThat(rewards).usingRecursiveComparison().isEqualTo(rewardsExample);
+    @Override
+    protected String[] getExamplesJson() {
+        return new String[]{
+                "{\"value\":40}",
+                "{\"min\":35,\"max\":45}"
+        };
     }
 }

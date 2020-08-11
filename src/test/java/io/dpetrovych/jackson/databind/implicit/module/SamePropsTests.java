@@ -6,13 +6,10 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import io.dpetrovych.jackson.databind.implicit.JsonImplicitTypes;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class SamePropsTests extends Base {
+public class SamePropsTests extends BaseCanSerialize<SamePropsTests.Reward> {
     @JsonImplicitTypes
     @JsonSubTypes({
             @JsonSubTypes.Type(value = MinMaxReward.class),
@@ -27,28 +24,34 @@ public class SamePropsTests extends Base {
         public int min, max;
     }
 
-    private final ArrayList<Reward> rewardsExample = new ArrayList<Reward>() {
-        {
-            add(new MinMaxReward() {{min=40; max=50;}});
-            add(new MaxMinReward() {{max=45; min=35;}});
-        }
-    };
+    @Override
+    protected Reward[] getExamples() {
+        return new Reward[]{
+                new MinMaxReward() {{
+                    min = 40;
+                    max = 50;
+                }},
+                new MaxMinReward() {{
+                    max = 45;
+                    min = 35;
+                }},
+        };
+    }
 
-    @Test
-    public void serialize() throws IOException {
-        String json = mapper.writeValueAsString(rewardsExample);
-
-        assertThat(json).isEqualTo("[{\"max\":50,\"min\":40},{\"min\":35,\"max\":45}]");
+    @Override
+    protected String[] getExamplesJson() {
+        return new String[]{
+                "{\"max\":50,\"min\":40}",
+                "{\"min\":35,\"max\":45}",
+        };
     }
 
     @Test
     public void deserialize__fails() {
-        String json = "[{\"max\":50,\"min\":40},{\"min\":35,\"max\":45}]";
-
-        Exception exception = assertThrows(JsonMappingException.class, () -> mapper.readValue(json, new TypeReference<ArrayList<Reward>>() {}));
+        Exception exception = assertThrows(JsonMappingException.class, () -> mapper.readValue(getExampleJsonArray(), new TypeReference<Reward[]>() {}));
 
         assertThat(exception.getMessage()).isEqualTo(
                 "2 types matches the same object: [" + MinMaxReward.class.getName() + ", "+ MaxMinReward.class.getName() + "]\n" +
-                " at [Source: (String)\"[{\"max\":50,\"min\":40},{\"min\":35,\"max\":45}]\"; line: 1, column: 20] (through reference chain: java.util.ArrayList[0])");
+                " at [Source: (String)\"[{\"max\":50,\"min\":40},{\"min\":35,\"max\":45}]\"; line: 1, column: 20] (through reference chain: java.lang.Object[][0])");
     }
 }
