@@ -7,12 +7,15 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.dpetrovych.jackson.databind.implicit.handlers.DistinctPropertiesTypeHandler;
+import io.dpetrovych.jackson.databind.implicit.handlers.TreePropertiesTypeHandler;
 import io.dpetrovych.jackson.databind.implicit.handlers.TypeHandler;
+import io.dpetrovych.jackson.databind.implicit.types.PropertiesDescriptor;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
+import static java.util.stream.Collectors.toList;
 
 
 public class ImplicitPolymorphicDeserializer<T> extends JsonDeserializer<T> {
@@ -32,8 +35,13 @@ public class ImplicitPolymorphicDeserializer<T> extends JsonDeserializer<T> {
         if (node == null)
             throw new IOException(String.format("Only object node can be deserialized as %s", superClass.getName()));
 
-        TypeHandler<T> typeHandler = new DistinctPropertiesTypeHandler<>(typeDescriptions, superType);
+        List<PropertiesDescriptor<T>> propertiesDescriptors = typeDescriptions.stream()
+                .map(PropertiesDescriptor::<T>from)
+                .collect(toList());
+
+        TypeHandler<T> typeHandler = new TreePropertiesTypeHandler<>(propertiesDescriptors, superType, deserializationContext.getConfig());
         Class<? extends T> concreteClass = typeHandler.getTypeToCast(jsonParser, node);
+
         return jsonParser.getCodec().treeToValue(node, concreteClass);
     }
 }

@@ -18,21 +18,23 @@ public class SingleKnownType extends BaseCanDeserialize<SingleKnownType.Reward> 
     }
 
     @JsonImplicitTypes
-    @JsonSubTypes({@JsonSubTypes.Type(value = FixedReward.class)})
+    @JsonSubTypes({@JsonSubTypes.Type(value = VariableReward.class)})
     interface Reward { }
 
-    static class FixedReward implements Reward {
-        public int value;
+    static class VariableReward implements Reward {
+        public int min,max;
     }
 
     @Override
     protected Reward[] getExamples() {
         return new Reward[]{
-                new FixedReward() {{
-                    value = 40;
+                new VariableReward() {{
+                    min = 40;
+                    max = 50;
                 }},
-                new FixedReward() {{
-                    value = 50;
+                new VariableReward() {{
+                    min = 50;
+                    max = 60;
                 }},
         };
     }
@@ -40,8 +42,8 @@ public class SingleKnownType extends BaseCanDeserialize<SingleKnownType.Reward> 
     @Override
     protected String[] getExamplesJson() {
         return new String[]{
-                "{\"value\":40}",
-                "{\"value\":50}",
+                "{\"min\":40,\"max\":50}",
+                "{\"min\":50,\"max\":60}",
         };
     }
 
@@ -53,10 +55,19 @@ public class SingleKnownType extends BaseCanDeserialize<SingleKnownType.Reward> 
 
     @Test
     public void deserialize__with_unknown_props__success() throws IOException {
-        String json = formatJsonArray("{\"value\":40}", "{\"value\":50,\"max\":100}");
+        String json = "{\"min\":40,\"max\":50,\"plus\":true}";
 
-        Reward[] rewards = mapper.readValue(json, deserializeType());
+        Reward reward = mapper.readValue(json, new TypeReference<Reward>() {});
 
-        assertThat(rewards).usingRecursiveComparison().isEqualTo(rewards);
+        assertThat(reward).usingRecursiveComparison().isEqualTo(new VariableReward() {{ min=40; max=50; }});
+    }
+
+    @Test
+    public void deserialize__with_incomplete_props__success() throws IOException {
+        String json = "{\"max\":50}";
+
+        Reward reward = mapper.readValue(json, new TypeReference<Reward>() {});
+
+        assertThat(reward).usingRecursiveComparison().isEqualTo(new VariableReward() {{ min=0; max=50; }});
     }
 }
