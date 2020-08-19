@@ -20,26 +20,26 @@ import static java.util.stream.Collectors.toList;
 
 public class ImplicitPolymorphicDeserializer<T> extends JsonDeserializer<T> {
     private final Collection<BeanDescription> typeDescriptions;
-    private final JavaType superType;
-    private final Class<T> superClass;
+    private final JavaType supertype;
+    private final Class<T> superclass;
 
-    public ImplicitPolymorphicDeserializer(Collection<BeanDescription> typeDescriptions, JavaType superType, Class<T> superClass) {
+    public ImplicitPolymorphicDeserializer(Collection<BeanDescription> typeDescriptions, JavaType supertype, Class<T> superclass) {
         this.typeDescriptions = typeDescriptions;
-        this.superType = superType;
-        this.superClass = superClass;
+        this.supertype = supertype;
+        this.superclass = superclass;
     }
 
     @Override
     public T deserialize(@NotNull JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
         ObjectNode node = jsonParser.readValueAsTree();
         if (node == null)
-            throw new IOException(String.format("Only object node can be deserialized as %s", superClass.getName()));
+            throw new IOException(ErrorMessages.onlyObjectDeserializationAllowed(superclass));
 
         List<PropertiesDescriptor<? extends T>> propertiesDescriptors = typeDescriptions.stream()
                 .map(PropertiesDescriptor::<T>from)
                 .collect(toList());
 
-        TypeHandler<T> typeHandler = new TreePropertiesTypeHandler<>(propertiesDescriptors, superType, deserializationContext.getConfig());
+        TypeHandler<T> typeHandler = new TreePropertiesTypeHandler<>(propertiesDescriptors, supertype, deserializationContext.getConfig());
         Class<? extends T> concreteClass = typeHandler.getTypeToCast(jsonParser, node);
 
         return jsonParser.getCodec().treeToValue(node, concreteClass);

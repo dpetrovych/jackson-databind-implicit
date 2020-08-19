@@ -26,11 +26,7 @@ public class ImplicitPolymorphicDeserializers extends Deserializers.Base {
 
         JsonSubTypes subTypesAnnotation = valueType.getAnnotation(JsonSubTypes.class);
         if (subTypesAnnotation == null)
-            throw new JsonMappingException(null,
-                    String.format("@%s annotation require @%s for type: %s",
-                            JsonImplicitTypes.class.getSimpleName(),
-                            JsonSubTypes.class.getSimpleName(),
-                            valueType.getName()));
+            throw new JsonMappingException(null, ErrorMessages.subtypesAnnotationRequired(valueType));
 
         Collection<BeanDescription> typeDescriptions = Arrays.stream(subTypesAnnotation.value())
                 .map(type -> toBeanDescription(deserializationConfig, type.value()))
