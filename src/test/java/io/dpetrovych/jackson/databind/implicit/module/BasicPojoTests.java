@@ -1,9 +1,8 @@
 package io.dpetrovych.jackson.databind.implicit.module;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import io.dpetrovych.jackson.databind.implicit.JsonImplicitTypes;
+import io.dpetrovych.jackson.databind.implicit.fixtures.basic.*;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -11,24 +10,10 @@ import java.io.IOException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class BasicPojoTests extends BaseCanDeserialize<BasicPojoTests.Reward> {
+public class BasicPojoTests extends BaseCanDeserialize<Reward> {
     @Override
     protected TypeReference<Reward[]> deserializeType() {
         return new TypeReference<Reward[]>() {};
-    }
-
-    @JsonImplicitTypes
-    @JsonSubTypes({
-            @JsonSubTypes.Type(value = FixedReward.class),
-            @JsonSubTypes.Type(value = VariableReward.class)})
-    interface Reward { }
-
-    static class FixedReward implements Reward {
-        public int value;
-    }
-
-    static class VariableReward implements Reward {
-        public int min, max;
     }
 
     @Override

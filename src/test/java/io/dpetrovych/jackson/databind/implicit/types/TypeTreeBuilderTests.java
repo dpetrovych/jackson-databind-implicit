@@ -1,5 +1,7 @@
 package io.dpetrovych.jackson.databind.implicit.types;
 
+import io.dpetrovych.jackson.databind.implicit.fixtures.basic.*;
+import io.dpetrovych.jackson.databind.implicit.fixtures.multi_level.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -8,36 +10,6 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TypeTreeBuilderTests {
-    // Simple type
-    interface Reward { }
-
-    static class FixedReward implements Reward {
-        public int value;
-    }
-
-    static class MinMaxReward implements Reward {
-        public int max, min;
-    }
-
-    // Complex type
-    interface Shape { }
-
-    static class Circle implements Shape {
-        public int radius;
-    }
-
-    static class Disk extends Circle {
-        public String fill;
-    }
-
-    static class Frame implements Shape {
-        public int height, width;
-    }
-
-    static class Rectangle extends Frame {
-        public String fill;
-    }
-
     @Test
     void simpleType_single_build() {
         TypeSearchNode<Reward> tree = new TypeSearchTreeBuilder<>(asList(

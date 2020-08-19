@@ -1,28 +1,19 @@
 package io.dpetrovych.jackson.databind.implicit.module;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dpetrovych.jackson.databind.implicit.JsonImplicitTypes;
+import io.dpetrovych.jackson.databind.implicit.fixtures.single.*;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SingleKnownType extends BaseCanDeserialize<SingleKnownType.Reward> {
+public class SingleKnownType extends BaseCanDeserialize<Reward> {
     @Override
     protected TypeReference<Reward[]> deserializeType() {
         return new TypeReference<Reward[]>() {};
-    }
-
-    @JsonImplicitTypes
-    @JsonSubTypes({@JsonSubTypes.Type(value = VariableReward.class)})
-    interface Reward { }
-
-    static class VariableReward implements Reward {
-        public int min,max;
     }
 
     @Override

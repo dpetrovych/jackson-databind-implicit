@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class MissingSubTypesAttributeTests extends Base {
+public class MissingSubTypesAttributeTests extends BaseCanSerialize<MissingSubTypesAttributeTests.Reward> {
     @JsonImplicitTypes
     interface Reward { }
 
@@ -20,7 +20,8 @@ public class MissingSubTypesAttributeTests extends Base {
         public int min, max;
     }
 
-    private Reward[] getExamples() {
+    @Override
+    protected Reward[] getExamples() {
         return new Reward[]{
                 new FixedReward() {{
                     value = 40;
@@ -32,7 +33,8 @@ public class MissingSubTypesAttributeTests extends Base {
         };
     }
 
-    private String[] getExamplesJson() {
+    @Override
+    protected String[] getExamplesJson() {
         return new String[]{
                 "{\"value\":40}",
                 "{\"min\":35,\"max\":45}"

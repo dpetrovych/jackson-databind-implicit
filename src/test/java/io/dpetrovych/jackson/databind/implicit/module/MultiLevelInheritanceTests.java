@@ -1,43 +1,15 @@
 package io.dpetrovych.jackson.databind.implicit.module;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dpetrovych.jackson.databind.implicit.JsonImplicitTypes;
+import io.dpetrovych.jackson.databind.implicit.fixtures.multi_level.*;
 
-public class MultiLevelInheritanceTests extends BaseCanDeserialize<MultiLevelInheritanceTests.Shape> {
+public class MultiLevelInheritanceTests extends BaseCanDeserialize<Shape> {
     @Override
     protected TypeReference<Shape[]> deserializeType() {
         return new TypeReference<Shape[]>() {};
     }
-
-    @JsonImplicitTypes
-    @JsonSubTypes({
-            @JsonSubTypes.Type(value = Circle.class),
-            @JsonSubTypes.Type(value = Disk.class),
-            @JsonSubTypes.Type(value = Frame.class),
-            @JsonSubTypes.Type(value = Rectangle.class),
-    })
-
-    interface Shape { }
-
-    static class Circle implements Shape {
-        public int radius;
-    }
-
-    static class Disk extends Circle {
-        public String fill;
-    }
-
-    static class Frame implements Shape {
-        public int height, width;
-    }
-
-    static class Rectangle extends Frame {
-        public String fill;
-    }
-
 
     @Override
     protected final Shape[] getExamples() {
@@ -48,7 +20,6 @@ public class MultiLevelInheritanceTests extends BaseCanDeserialize<MultiLevelInh
             new Rectangle() {{height=1; width=2; fill="#00FF00";}},
         };
     }
-
 
     @Override
     protected String[] getExamplesJson() {
