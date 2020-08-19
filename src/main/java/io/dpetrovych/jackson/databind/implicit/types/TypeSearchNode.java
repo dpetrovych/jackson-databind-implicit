@@ -6,16 +6,15 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import static io.dpetrovych.jackson.databind.implicit.helpers.SetHelper.intersect;
 import static io.dpetrovych.jackson.databind.implicit.helpers.SetHelper.subtract;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static java.util.stream.Collectors.partitioningBy;
 import static java.util.stream.Collectors.toList;
 
 public class TypeSearchNode<T> {
@@ -51,37 +50,27 @@ public class TypeSearchNode<T> {
         return findRecursive(fields, ignoreUnknownFields).map(it -> it.node.descriptor);
     }
 
+    @SuppressWarnings("MethodComplexity")
     private Optional<FindTypeResult> findRecursive(@NotNull Collection<String> fields, boolean ignoreUnknownFields) throws TooManyTypesFoundException {
         final Set<String> distinctFields = subtract(fields, this.properties);
 
-        if (distinctFields.isEmpty() && this.descriptor != null)
-            return of(new FindTypeResult(this, emptySet()));
-
-        if (children == null)
-            return of(new FindTypeResult(this, distinctFields));
-
-        List<FindTypeResult> childrenResult = children.stream()
-                .map(it -> it.findRecursive(distinctFields, ignoreUnknownFields))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+        if (children != null) {
+            List<TypeSearchNode<T>> childrenIntersects = children.stream()
+                .filter(child ->
+                    (children.size() == 1 && this.descriptor == null) ||
+                    (!distinctFields.isEmpty() && intersect(child.properties, distinctFields).size() > 0))
                 .collect(toList());
 
-        Map<Boolean, List<FindTypeResult>> isEquivalentResult = childrenResult.stream().collect(partitioningBy(it -> it.unknownFields.isEmpty()));
+            if (childrenIntersects.size() == 1)
+                return childrenIntersects.get(0).findRecursive(distinctFields, ignoreUnknownFields);
 
-        Optional<FindTypeResult> equivalentResult = getSingleResult(isEquivalentResult.get(true));
-        if (equivalentResult.isPresent())
-            return equivalentResult;
+            if (childrenIntersects.size() > 1 || descriptor == null)
+                throw new TooManyTypesFoundException(children.stream().map(it -> it.descriptor.beanClass).collect(toList()));
+        }
 
-        if (ignoreUnknownFields)
-            return getSingleResult(isEquivalentResult.get(false));
-
-        return empty();
-    }
-
-    private Optional<FindTypeResult> getSingleResult(List<FindTypeResult> results) throws TooManyTypesFoundException {
-        if (results.isEmpty()) return empty();
-        if (results.size() == 1) return of(results.get(0));
-        throw new TooManyTypesFoundException(results.stream().map(it -> it.node.descriptor.beanClass).collect(toList()));
+        return this.descriptor != null && (distinctFields.isEmpty() || ignoreUnknownFields)
+            ? of(new FindTypeResult(this))
+            : empty();
     }
 
     List<TypeSearchNode<T>> getChildren() {
@@ -96,11 +85,9 @@ public class TypeSearchNode<T> {
 
     public class FindTypeResult {
         public final TypeSearchNode<T> node;
-        private final Set<String> unknownFields;
 
-        public FindTypeResult(TypeSearchNode<T> node, Set<String> unknownFields) {
+        public FindTypeResult(TypeSearchNode<T> node) {
             this.node = node;
-            this.unknownFields = unknownFields;
         }
     }
 }
