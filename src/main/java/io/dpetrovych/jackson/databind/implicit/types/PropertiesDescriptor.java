@@ -1,38 +1,24 @@
 package io.dpetrovych.jackson.databind.implicit.types;
-
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-public final class PropertiesDescriptor<T> {
+public class PropertiesDescriptor<T> {
     @NotNull
     public final Set<String> properties;
     @NotNull
-    public final Class<? extends T> beanClass;
+    public final Class<? extends T> type;
 
-    public PropertiesDescriptor(@NotNull Collection<String> properties, @NotNull Class<? extends T> beanClass) {
+    PropertiesDescriptor(@NotNull Collection<String> properties, @NotNull Class<? extends T> type) {
         this.properties = new HashSet<>(properties);
-        this.beanClass = beanClass;
+        this.type = type;
     }
 
     @Override
     public String toString() {
-        return "{properties=" + properties + ", beanClass=" + beanClass + "}";
-    }
-
-    public static <T> PropertiesDescriptor<? extends T> from(BeanDescription beanDescription) {
-        Set<String> properties = beanDescription.findProperties().stream()
-                .map(BeanPropertyDefinition::getName)
-                .collect(Collectors.toSet());
-
-        @SuppressWarnings("unchecked")
-        Class<? extends T> beanClass = (Class<? extends T>)beanDescription.getBeanClass();
-
-        return new PropertiesDescriptor<>(properties, beanClass);
+        return "{properties=" + properties + ", beanClass=" + type + "}";
     }
 }
+

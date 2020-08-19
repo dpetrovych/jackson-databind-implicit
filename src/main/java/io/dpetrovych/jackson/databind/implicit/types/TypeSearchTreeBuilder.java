@@ -2,35 +2,44 @@ package io.dpetrovych.jackson.databind.implicit.types;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Optional.of;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 
 public class TypeSearchTreeBuilder<T> {
-    private final Collection<PropertiesDescriptor<? extends T>> descriptors;
+    private final Class<?>[] types;
     private final Class<T> superclass;
+    private final PropertiesExtractor propertiesExtractor;
 
-    public TypeSearchTreeBuilder(Collection<PropertiesDescriptor<? extends T>> descriptors, Class<T> superclass) {
-        this.descriptors = descriptors;
+    public TypeSearchTreeBuilder(Class<?>[] types, Class<T> superclass, PropertiesExtractor propertiesExtractor) {
+        this.types = types;
         this.superclass = superclass;
+        this.propertiesExtractor = propertiesExtractor;
     }
 
     public TypeSearchNode<T> build() {
-        List<TypeHierarchyNode<T>> classNodes = descriptors.stream().map(this::buildClassPath).collect(Collectors.toList());
+        Stream<SubTypeDescriptor<? extends T>> descriptors = Arrays.stream(types)
+            .map(this.propertiesExtractor::<T>getPropertiesDescriptor)
+            .map(SubTypeDescriptor::<T>from);
+
+        List<TypeHierarchyNode<T>> classNodes = descriptors.map(this::buildClassPath).collect(Collectors.toList());
         return new TypeSearchNode<>(null, combineClassNodes(classNodes));
     }
 
     @NotNull
-    private TypeHierarchyNode<T> buildClassPath(PropertiesDescriptor<? extends T> descriptor) {
+    private TypeHierarchyNode<T> buildClassPath(SubTypeDescriptor<? extends T> descriptor) {
         return buildClassPath(new TypeHierarchyNode<>(descriptor))
             .orElseThrow(() -> new RuntimeException(
-                String.format("Class %s should be descendant of %s", descriptor.beanClass.getName(), this.superclass.getName())));
+                String.format("Class %s should be descendant of %s", descriptor.type.getName(), this.superclass.getName())));
     }
 
     @NotNull
@@ -51,16 +60,19 @@ public class TypeSearchTreeBuilder<T> {
         if (classNodes.isEmpty())
             return null;
 
-        Collection<List<TypeHierarchyNode<T>>> collect = classNodes.stream()
-            .collect(groupingBy(it -> it.type, toList()))
-            .values();
+        Map<Class<?>, List<TypeHierarchyNode<T>>> collect = classNodes.stream()
+            .collect(groupingBy(it -> it.type, toList()));
 
-        return collect.stream()
-            .map(classNodeList -> {
+        return collect.keySet().stream()
+            .map(type -> {
+                List<TypeHierarchyNode<T>> classNodeList = collect.get(type);
+
+                @SuppressWarnings("unchecked")
                 PropertiesDescriptor<? extends T> descriptor = classNodeList.stream()
-                    .map(classNode -> classNode.descriptor)
+                    .map(classNode -> (PropertiesDescriptor)classNode.descriptor)
                     .filter(Objects::nonNull)
-                    .findFirst().orElse(null);
+                    .findFirst()
+                    .orElseGet(() -> this.propertiesExtractor.getPropertiesDescriptor(type));
 
                 Collection<TypeHierarchyNode<T>> forwardNodes = classNodeList.stream()
                     .map(classNode -> classNode.child)

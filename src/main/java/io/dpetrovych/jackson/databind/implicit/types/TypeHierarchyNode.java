@@ -9,11 +9,11 @@ import java.util.List;
 
 class TypeHierarchyNode<T> {
     public final Class<?> type;
-    public final PropertiesDescriptor<? extends T> descriptor;
+    public final SubTypeDescriptor<? extends T> descriptor;
     public final TypeHierarchyNode<T> child;
 
-    public TypeHierarchyNode(@NotNull PropertiesDescriptor<? extends T> descriptor) {
-        this.type = descriptor.beanClass;
+    public TypeHierarchyNode(@NotNull SubTypeDescriptor<? extends T> descriptor) {
+        this.type = descriptor.type;
         this.descriptor = descriptor;
         this.child = null;
     }

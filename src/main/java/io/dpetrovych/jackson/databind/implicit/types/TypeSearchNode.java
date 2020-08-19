@@ -65,7 +65,7 @@ public class TypeSearchNode<T> {
                 return childrenIntersects.get(0).findRecursive(distinctFields, ignoreUnknownFields);
 
             if (childrenIntersects.size() > 1 || descriptor == null)
-                throw new TooManyTypesFoundException(children.stream().map(it -> it.descriptor.beanClass).collect(toList()));
+                throw new TooManyTypesFoundException(children.stream().map(it -> it.descriptor.type).collect(toList()));
         }
 
         return this.descriptor != null && (distinctFields.isEmpty() || ignoreUnknownFields)

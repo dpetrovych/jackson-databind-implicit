@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
-import static io.dpetrovych.jackson.databind.implicit.helpers.TestDescriptors.descriptorOf;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,10 +15,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class TypeSearchNodeTests {
     @Nested
     public class Single {
+        private final PropertiesExtractor propertiesExtractor = new PropertiesExtractorMock();
+
         private final TypeSearchNode<Reward> tree = new TypeSearchTreeBuilder<>(
-            asList(
-                descriptorOf(FixedReward.class)
-            ), Reward.class).build();
+            new Class[]{
+                FixedReward.class
+            }, Reward.class, this.propertiesExtractor).build();
 
         @Test
         void emptyFields__finds() {
@@ -27,7 +28,7 @@ public class TypeSearchNodeTests {
 
             assertThat(result)
                 .isPresent()
-                .hasValueSatisfying(type -> assertThat(type.beanClass).isEqualTo(FixedReward.class));
+                .hasValueSatisfying(type -> assertThat(type.type).isEqualTo(FixedReward.class));
         }
 
         @Test
@@ -43,7 +44,7 @@ public class TypeSearchNodeTests {
 
             assertThat(result)
                 .isPresent()
-                .hasValueSatisfying(type -> assertThat(type.beanClass).isEqualTo(FixedReward.class));
+                .hasValueSatisfying(type -> assertThat(type.type).isEqualTo(FixedReward.class));
         }
 
         @Test
@@ -52,7 +53,7 @@ public class TypeSearchNodeTests {
 
             assertThat(result)
                 .isPresent()
-                .hasValueSatisfying(type -> assertThat(type.beanClass).isEqualTo(FixedReward.class));
+                .hasValueSatisfying(type -> assertThat(type.type).isEqualTo(FixedReward.class));
         }
 
         @Test
@@ -61,17 +62,19 @@ public class TypeSearchNodeTests {
 
             assertThat(result)
                 .isPresent()
-                .hasValueSatisfying(type -> assertThat(type.beanClass).isEqualTo(FixedReward.class));
+                .hasValueSatisfying(type -> assertThat(type.type).isEqualTo(FixedReward.class));
         }
     }
 
     @Nested
     public class Basic {
+        private final PropertiesExtractor propertiesExtractor = new PropertiesExtractorMock();
+
         private final TypeSearchNode<Reward> tree = new TypeSearchTreeBuilder<>(
-            asList(
-                descriptorOf(FixedReward.class),
-                descriptorOf(VariableReward.class)
-            ), Reward.class).build();
+            new Class[]{
+                FixedReward.class,
+                VariableReward.class
+            }, Reward.class, this.propertiesExtractor).build();
 
         @Test
         void emptyFields__throws() {
@@ -86,7 +89,7 @@ public class TypeSearchNodeTests {
 
             assertThat(result)
                 .isPresent()
-                .hasValueSatisfying(type -> assertThat(type.beanClass).isEqualTo(FixedReward.class));
+                .hasValueSatisfying(type -> assertThat(type.type).isEqualTo(FixedReward.class));
         }
 
         @Test
@@ -102,7 +105,7 @@ public class TypeSearchNodeTests {
 
             assertThat(result)
                 .isPresent()
-                .hasValueSatisfying(type -> assertThat(type.beanClass).isEqualTo(VariableReward.class));
+                .hasValueSatisfying(type -> assertThat(type.type).isEqualTo(VariableReward.class));
         }
 
         @Test
@@ -118,19 +121,21 @@ public class TypeSearchNodeTests {
 
             assertThat(result)
                 .isPresent()
-                .hasValueSatisfying(type -> assertThat(type.beanClass).isEqualTo(VariableReward.class));
+                .hasValueSatisfying(type -> assertThat(type.type).isEqualTo(VariableReward.class));
         }
     }
 
     @Nested
     public class Complex {
+        private final PropertiesExtractor propertiesExtractor = new PropertiesExtractorMock();
+
         private final TypeSearchNode<Shape> tree = new TypeSearchTreeBuilder<>(
-            asList(
-                descriptorOf(Circle.class),
-                descriptorOf(Disk.class),
-                descriptorOf(Frame.class),
-                descriptorOf(Rectangle.class)
-            ), Shape.class).build();
+            new Class[]{
+                Circle.class,
+                Disk.class,
+                Frame.class,
+                Rectangle.class
+            }, Shape.class, this.propertiesExtractor).build();
 
         @Test
         void emptyFields__throws() {
@@ -159,7 +164,7 @@ public class TypeSearchNodeTests {
 
             assertThat(result)
                 .isPresent()
-                .hasValueSatisfying(type -> assertThat(type.beanClass).isEqualTo(Frame.class));
+                .hasValueSatisfying(type -> assertThat(type.type).isEqualTo(Frame.class));
         }
 
         @Test
@@ -168,7 +173,7 @@ public class TypeSearchNodeTests {
 
             assertThat(result)
                 .isPresent()
-                .hasValueSatisfying(type -> assertThat(type.beanClass).isEqualTo(Rectangle.class));
+                .hasValueSatisfying(type -> assertThat(type.type).isEqualTo(Rectangle.class));
         }
 
         @Test
@@ -184,7 +189,7 @@ public class TypeSearchNodeTests {
 
             assertThat(result)
                 .isPresent()
-                .hasValueSatisfying(type -> assertThat(type.beanClass).isEqualTo(Rectangle.class));
+                .hasValueSatisfying(type -> assertThat(type.type).isEqualTo(Rectangle.class));
         }
 
 
@@ -194,7 +199,7 @@ public class TypeSearchNodeTests {
 
             assertThat(result)
                 .isPresent()
-                .hasValueSatisfying(type -> assertThat(type.beanClass).isEqualTo(Circle.class));
+                .hasValueSatisfying(type -> assertThat(type.type).isEqualTo(Circle.class));
         }
 
 
@@ -211,7 +216,7 @@ public class TypeSearchNodeTests {
 
             assertThat(result)
                 .isPresent()
-                .hasValueSatisfying(type -> assertThat(type.beanClass).isEqualTo(Circle.class));
+                .hasValueSatisfying(type -> assertThat(type.type).isEqualTo(Circle.class));
         }
 
         @Test
@@ -220,7 +225,7 @@ public class TypeSearchNodeTests {
 
             assertThat(result)
                 .isPresent()
-                .hasValueSatisfying(type -> assertThat(type.beanClass).isEqualTo(Disk.class));
+                .hasValueSatisfying(type -> assertThat(type.type).isEqualTo(Disk.class));
         }
 
 
@@ -237,7 +242,126 @@ public class TypeSearchNodeTests {
 
             assertThat(result)
                 .isPresent()
-                .hasValueSatisfying(type -> assertThat(type.beanClass).isEqualTo(Disk.class));
+                .hasValueSatisfying(type -> assertThat(type.type).isEqualTo(Disk.class));
+        }
+    }
+
+    @Nested
+    public class ComplexOnlyLeafs {
+        private final PropertiesExtractor propertiesExtractor = new PropertiesExtractorMock();
+
+        private final TypeSearchNode<Shape> tree = new TypeSearchTreeBuilder<>(
+            new Class[]{
+                Disk.class,
+                Rectangle.class
+            }, Shape.class, this.propertiesExtractor).build();
+
+        @Test
+        void emptyFields__fail() {
+            TooManyTypesFoundException exception = assertThrows(TooManyTypesFoundException.class, () -> tree.find(emptySet()));
+
+            assertThat(exception.classes).contains(Circle.class, Frame.class);
+        }
+
+        @Test
+        void ambiguousField__fail() {
+            TooManyTypesFoundException exception = assertThrows(TooManyTypesFoundException.class, () -> tree.find(asList("fill")));
+
+            assertThat(exception.classes).contains(Circle.class, Frame.class);
+        }
+
+        @Test
+        void ambiguousField__ignoreUnknown__fail() {
+            TooManyTypesFoundException exception = assertThrows(TooManyTypesFoundException.class, () -> tree.find(asList("fill"), true));
+
+            assertThat(exception.classes).contains(Circle.class, Frame.class);
+        }
+
+        @Test
+        void secondLevelPartial__byFirstLevel__find() {
+            Optional<PropertiesDescriptor<? extends Shape>> result = tree.find(asList("height"));
+
+            assertThat(result)
+                .isPresent()
+                .hasValueSatisfying(type -> assertThat(type.type).isEqualTo(Rectangle.class));
+        }
+
+        @Test
+        void secondLevelPartial__find() {
+            Optional<PropertiesDescriptor<? extends Shape>> result = tree.find(asList("width", "fill"));
+
+            assertThat(result)
+                .isPresent()
+                .hasValueSatisfying(type -> assertThat(type.type).isEqualTo(Rectangle.class));
+        }
+
+        @Test
+        void secondLevelPartial__unknown__empty() {
+            Optional<PropertiesDescriptor<? extends Shape>> result = tree.find(asList("height", "fill", "unknown"));
+
+            assertThat(result).isEmpty();
+        }
+
+        @Test
+        void secondLevelPartial__ignoreUnknown__find() {
+            Optional<PropertiesDescriptor<? extends Shape>> result = tree.find(asList("height", "fill", "unknown"), true);
+
+            assertThat(result)
+                .isPresent()
+                .hasValueSatisfying(type -> assertThat(type.type).isEqualTo(Rectangle.class));
+        }
+
+
+        @Test
+        void secondLevel__byFirstLevel__find() {
+            Optional<PropertiesDescriptor<? extends Shape>> result = tree.find(asList("radius"));
+
+            assertThat(result)
+                .isPresent()
+                .hasValueSatisfying(type -> assertThat(type.type).isEqualTo(Disk.class));
+        }
+
+
+        @Test
+        void firstLevelProperties__unknown__empty() {
+            Optional<PropertiesDescriptor<? extends Shape>> result = tree.find(asList("radius", "unknown"));
+
+            assertThat(result).isEmpty();
+        }
+
+        @Test
+        void firstLevelProperties__allowUnknown__find() {
+            Optional<PropertiesDescriptor<? extends Shape>> result = tree.find(asList("radius", "unknown"), true);
+
+            assertThat(result)
+                .isPresent()
+                .hasValueSatisfying(type -> assertThat(type.type).isEqualTo(Disk.class));
+        }
+
+        @Test
+        void secondLevel__find() {
+            Optional<PropertiesDescriptor<? extends Shape>> result = tree.find(asList("radius", "fill"));
+
+            assertThat(result)
+                .isPresent()
+                .hasValueSatisfying(type -> assertThat(type.type).isEqualTo(Disk.class));
+        }
+
+
+        @Test
+        void secondLevel__unknown__empty() {
+            Optional<PropertiesDescriptor<? extends Shape>> result = tree.find(asList("radius", "fill", "unknown"));
+
+            assertThat(result).isEmpty();
+        }
+
+        @Test
+        void secondLevel__ignoreUnknown__find() {
+            Optional<PropertiesDescriptor<? extends Shape>> result = tree.find(asList("radius", "fill", "unknown"), true);
+
+            assertThat(result)
+                .isPresent()
+                .hasValueSatisfying(type -> assertThat(type.type).isEqualTo(Disk.class));
         }
     }
 }

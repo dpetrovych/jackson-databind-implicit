@@ -7,14 +7,13 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.dpetrovych.jackson.databind.implicit.types.PropertiesDescriptor;
+import io.dpetrovych.jackson.databind.implicit.types.PropertiesExtractorImpl;
 import io.dpetrovych.jackson.databind.implicit.types.TypeSearchNode;
 import io.dpetrovych.jackson.databind.implicit.types.TooManyTypesFoundException;
 import io.dpetrovych.jackson.databind.implicit.types.TypeSearchTreeBuilder;
 
 import java.util.Collection;
 import java.util.Set;
-
 
 import static io.dpetrovych.jackson.databind.implicit.ErrorMessages.createNoTypesMessage;
 import static io.dpetrovych.jackson.databind.implicit.ErrorMessages.createTooManyTypesMessage;
@@ -25,10 +24,10 @@ public class TreePropertiesTypeHandler<T> implements TypeHandler<T> {
     private final JavaType superType;
     private final DeserializationConfig config;
 
-    public TreePropertiesTypeHandler(Collection<PropertiesDescriptor<? extends T>> propertiesDescriptors, JavaType superType, DeserializationConfig config) {
+    public TreePropertiesTypeHandler(Class<?>[] types, JavaType superType, DeserializationConfig config) {
         this.superType = superType;
         this.config = config;
-        this.typeSearchTree = buildSearchTree(propertiesDescriptors, superType);
+        this.typeSearchTree = buildSearchTree(types, superType);
     }
 
     @Override
@@ -38,17 +37,17 @@ public class TreePropertiesTypeHandler<T> implements TypeHandler<T> {
 
         try {
             return this.typeSearchTree.find(nodeFields, ignoreUnknownProperties)
-                .map(it -> it.beanClass)
+                .map(it -> it.type)
                 .orElseThrow(() -> InvalidDefinitionException.from(parser, createNoTypesMessage(), superType));
         } catch (TooManyTypesFoundException e) {
             throw InvalidDefinitionException.from(parser, createTooManyTypesMessage(e.classes), superType);
         }
     }
 
-    private TypeSearchNode<T> buildSearchTree(Collection<PropertiesDescriptor<? extends T>> propertiesDescriptors, JavaType superType) {
+    private TypeSearchNode<T> buildSearchTree(Class<?>[] types, JavaType superType) {
         @SuppressWarnings("unchecked")
         TypeSearchTreeBuilder<T> typeTreeBuilder =
-            new TypeSearchTreeBuilder<>(propertiesDescriptors, (Class<T>)superType.getRawClass());
+            new TypeSearchTreeBuilder<T>(types, (Class<T>) superType.getRawClass(), new PropertiesExtractorImpl(this.config));
 
         return typeTreeBuilder.build();
     }
