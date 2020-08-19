@@ -43,7 +43,15 @@ public class TypeSearchNode<T> {
                 .orElse(emptySet());
     }
 
-    public Optional<FindTypeResult> find(Collection<String> fields, boolean ingoreUnkonwnFields) throws TooManyTypesFoundException {
+    public Optional<PropertiesDescriptor<? extends T>> find(@NotNull Collection<String> fields) throws TooManyTypesFoundException {
+        return find(fields, false);
+    }
+
+    public Optional<PropertiesDescriptor<? extends T>> find(@NotNull Collection<String> fields, boolean ignoreUnknownFields) throws TooManyTypesFoundException {
+        return findRecursive(fields, ignoreUnknownFields).map(it -> it.node.descriptor);
+    }
+
+    private Optional<FindTypeResult> findRecursive(@NotNull Collection<String> fields, boolean ignoreUnknownFields) throws TooManyTypesFoundException {
         final Set<String> distinctFields = subtract(fields, this.properties);
 
         if (distinctFields.isEmpty() && this.descriptor != null)
@@ -53,7 +61,7 @@ public class TypeSearchNode<T> {
             return of(new FindTypeResult(this, distinctFields));
 
         List<FindTypeResult> childrenResult = children.stream()
-                .map(it -> it.find(distinctFields, ingoreUnkonwnFields))
+                .map(it -> it.findRecursive(distinctFields, ignoreUnknownFields))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(toList());
@@ -64,7 +72,7 @@ public class TypeSearchNode<T> {
         if (equivalentResult.isPresent())
             return equivalentResult;
 
-        if (ingoreUnkonwnFields)
+        if (ignoreUnknownFields)
             return getSingleResult(isEquivalentResult.get(false));
 
         return empty();
