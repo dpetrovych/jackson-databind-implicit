@@ -35,7 +35,7 @@ public class ImplicitPolymorphicDeserializer<T> extends JsonDeserializer<T> {
         if (node == null)
             throw new IOException(String.format("Only object node can be deserialized as %s", superClass.getName()));
 
-        List<PropertiesDescriptor<T>> propertiesDescriptors = typeDescriptions.stream()
+        List<PropertiesDescriptor<? extends T>> propertiesDescriptors = typeDescriptions.stream()
                 .map(PropertiesDescriptor::<T>from)
                 .collect(toList());
 

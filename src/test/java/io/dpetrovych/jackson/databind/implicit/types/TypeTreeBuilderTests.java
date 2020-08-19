@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static io.dpetrovych.jackson.databind.implicit.helpers.TestDescriptors.descriptorOf;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -13,7 +14,7 @@ public class TypeTreeBuilderTests {
     @Test
     void simpleType_single_build() {
         TypeSearchNode<Reward> tree = new TypeSearchTreeBuilder<>(asList(
-                new PropertiesDescriptor<>(asList("min", "max"), MinMaxReward.class)
+            descriptorOf(VariableReward.class)
         ), Reward.class).build();
 
         assertThat(tree.getProperties()).isEmpty();
@@ -22,7 +23,7 @@ public class TypeTreeBuilderTests {
         assertThat(children.size()).isEqualTo(1);
 
         assertThat(children).hasOnlyOneElementSatisfying(node -> {
-            assertThat(node.descriptor.beanClass).isEqualTo(MinMaxReward.class);
+            assertThat(node.descriptor.beanClass).isEqualTo(VariableReward.class);
             assertThat(node.getChildren()).isEmpty();
             assertThat(node.getProperties()).contains("min", "max");
         });
@@ -31,8 +32,8 @@ public class TypeTreeBuilderTests {
     @Test
     void simpleType_build() {
         TypeSearchNode<Reward> tree = new TypeSearchTreeBuilder<>(asList(
-                new PropertiesDescriptor<>(asList("value"), FixedReward.class),
-                new PropertiesDescriptor<>(asList("min", "max"), MinMaxReward.class)
+            descriptorOf(FixedReward.class),
+            descriptorOf(VariableReward.class)
         ), Reward.class).build();
 
         assertThat(tree.getProperties()).isEmpty();
@@ -41,7 +42,7 @@ public class TypeTreeBuilderTests {
         assertThat(children.size()).isEqualTo(2);
 
         assertThat(children)
-            .filteredOn(node -> node.descriptor.beanClass.equals(MinMaxReward.class))
+            .filteredOn(node -> node.descriptor.beanClass.equals(VariableReward.class))
             .hasOnlyOneElementSatisfying(node -> {
                 assertThat(node.getChildren()).isEmpty();
                 assertThat(node.getProperties()).contains("min", "max");
@@ -58,10 +59,10 @@ public class TypeTreeBuilderTests {
     @Test
     void complexType__build() {
         TypeSearchNode<Shape> tree = new TypeSearchTreeBuilder<>(asList(
-                new PropertiesDescriptor<>(asList("radius"), Circle.class),
-                new PropertiesDescriptor<>(asList("radius", "fill"), Disk.class),
-                new PropertiesDescriptor<>(asList("height", "width"), Frame.class),
-                new PropertiesDescriptor<>(asList("height", "width", "fill"), Rectangle.class)
+            descriptorOf(Circle.class),
+            descriptorOf(Disk.class),
+            descriptorOf(Frame.class),
+            descriptorOf(Rectangle.class)
         ), Shape.class).build();
 
         List<TypeSearchNode<Shape>> children = tree.getChildren();
@@ -87,8 +88,8 @@ public class TypeTreeBuilderTests {
     @Test
     void complexType_skipDescriptors_buildsFullTree() {
         TypeSearchNode<Shape> tree = new TypeSearchTreeBuilder<>(asList(
-                new PropertiesDescriptor<>(asList("radius", "fill"), Disk.class),
-                new PropertiesDescriptor<>(asList("height", "width", "fill"), Rectangle.class)
+            descriptorOf(Disk.class),
+            descriptorOf(Rectangle.class)
         ), Shape.class).build();
 
         List<TypeSearchNode<Shape>> children = tree.getChildren();

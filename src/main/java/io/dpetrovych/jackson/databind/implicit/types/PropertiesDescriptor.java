@@ -25,7 +25,7 @@ public final class PropertiesDescriptor<T> {
         return "{properties=" + properties + ", beanClass=" + beanClass + "}";
     }
 
-    public static <T> PropertiesDescriptor<T> from(BeanDescription beanDescription) {
+    public static <T> PropertiesDescriptor<? extends T> from(BeanDescription beanDescription) {
         Set<String> properties = beanDescription.findProperties().stream()
                 .map(BeanPropertyDefinition::getName)
                 .collect(Collectors.toSet());

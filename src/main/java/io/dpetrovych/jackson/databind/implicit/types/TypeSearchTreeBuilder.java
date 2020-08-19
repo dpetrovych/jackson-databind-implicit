@@ -13,10 +13,10 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 
 public class TypeSearchTreeBuilder<T> {
-    private final Collection<PropertiesDescriptor<T>> descriptors;
+    private final Collection<PropertiesDescriptor<? extends T>> descriptors;
     private final Class<T> superclass;
 
-    public TypeSearchTreeBuilder(Collection<PropertiesDescriptor<T>> descriptors, Class<T> superclass) {
+    public TypeSearchTreeBuilder(Collection<PropertiesDescriptor<? extends T>> descriptors, Class<T> superclass) {
         this.descriptors = descriptors;
         this.superclass = superclass;
     }
@@ -27,7 +27,7 @@ public class TypeSearchTreeBuilder<T> {
     }
 
     @NotNull
-    private TypeHierarchyNode<T> buildClassPath(PropertiesDescriptor<T> descriptor) {
+    private TypeHierarchyNode<T> buildClassPath(PropertiesDescriptor<? extends T> descriptor) {
         return buildClassPath(new TypeHierarchyNode<>(descriptor))
             .orElseThrow(() -> new RuntimeException(
                 String.format("Class %s should be descendant of %s", descriptor.beanClass.getName(), this.superclass.getName())));
@@ -57,7 +57,7 @@ public class TypeSearchTreeBuilder<T> {
 
         return collect.stream()
             .map(classNodeList -> {
-                PropertiesDescriptor<T> descriptor = classNodeList.stream()
+                PropertiesDescriptor<? extends T> descriptor = classNodeList.stream()
                     .map(classNode -> classNode.descriptor)
                     .filter(Objects::nonNull)
                     .findFirst().orElse(null);

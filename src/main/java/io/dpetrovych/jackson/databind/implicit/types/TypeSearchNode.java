@@ -1,6 +1,7 @@
 package io.dpetrovych.jackson.databind.implicit.types;
 
 import io.dpetrovych.jackson.databind.implicit.helpers.SetHelper;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,11 +19,11 @@ import static java.util.stream.Collectors.partitioningBy;
 import static java.util.stream.Collectors.toList;
 
 public class TypeSearchNode<T> {
-    public final PropertiesDescriptor<T> descriptor;
+    public final PropertiesDescriptor<? extends T> descriptor;
     private final Collection<TypeSearchNode<T>> children;
     private final Set<String> properties;
 
-    public TypeSearchNode(PropertiesDescriptor<T> descriptor, Collection<TypeSearchNode<T>> children) {
+    public TypeSearchNode(PropertiesDescriptor<? extends T> descriptor, Collection<TypeSearchNode<T>> children) {
         if ((children == null || children.isEmpty()) && descriptor == null) {
             throw new IllegalArgumentException("descriptor should be not-null for a terminal node");
         }
@@ -32,7 +33,7 @@ public class TypeSearchNode<T> {
         this.properties = descriptor != null ? descriptor.properties : collectCommonProperties(children);
     }
 
-    private static <T> Set<String> collectCommonProperties(Collection<TypeSearchNode<T>> children) {
+    private static <T> Set<String> collectCommonProperties(@NotNull Collection<TypeSearchNode<T>> children) {
         if (children.size() == 1)
             return emptySet();
 
