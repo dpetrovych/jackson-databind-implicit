@@ -9,9 +9,9 @@ public class PropertiesDescriptor<T> {
     @NotNull
     public final Set<String> properties;
     @NotNull
-    public final Class<? extends T> type;
+    public final Class<T> type;
 
-    PropertiesDescriptor(@NotNull Collection<String> properties, @NotNull Class<? extends T> type) {
+    PropertiesDescriptor(@NotNull Collection<String> properties, @NotNull Class<T> type) {
         this.properties = new HashSet<>(properties);
         this.type = type;
     }

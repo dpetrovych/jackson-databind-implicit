@@ -24,6 +24,22 @@ public class SetHelper {
         return set;
     }
 
+    @Contract(pure = true)
+    public static <T> boolean hasIntersection(@NotNull Set<T> first, @NotNull Set<T> second) {
+        if (first.size() > second.size()) {
+            Set<T> temp = first;
+            first = second;
+            second = temp;
+        }
+
+        for (T val : first) {
+            if (second.contains(val))
+                return true;
+        }
+
+        return false;
+    }
+
     @NotNull
     @Contract(pure = true)
     public static <T> Set<T> subtract(@NotNull Collection<T> first, @NotNull Collection<T> second) {

@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 
 public final class SubTypeDescriptor<T> extends PropertiesDescriptor<T> {
-    private SubTypeDescriptor(@NotNull Collection<String> properties, @NotNull Class<? extends T> type) {
+    private SubTypeDescriptor(@NotNull Collection<String> properties, @NotNull Class<T> type) {
         super(properties, type);
     }
 

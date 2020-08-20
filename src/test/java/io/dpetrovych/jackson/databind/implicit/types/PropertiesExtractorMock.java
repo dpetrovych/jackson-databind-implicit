@@ -14,6 +14,6 @@ public class PropertiesExtractorMock implements PropertiesExtractor {
     @Override
     public <T> PropertiesDescriptor<? extends T> getPropertiesDescriptor(Class<?> type) {
         List<String> fields = Arrays.stream(type.getDeclaredFields()).map(Field::getName).collect(toList());
-        return new PropertiesDescriptor<T>(fields, (Class<? extends T>) type);
+        return new PropertiesDescriptor<T>(fields, (Class<T>) type);
     }
 }

@@ -61,7 +61,7 @@ public class TypeSearchNode<T> {
             return Optional.empty();
 
         List<TypeSearchNode<T>> childrenIntersects = children.stream()
-            .filter(child -> intersect(child.descriptor.properties, distinctFields).size() > 0)
+            .filter(child -> hasIntersection(distinctFields, child.descriptor.properties))
             .collect(toList());
 
         if (childrenIntersects.isEmpty())
