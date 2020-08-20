@@ -32,7 +32,7 @@ public class TypeSearchTreeBuilder<T> {
             .map(SubTypeDescriptor::<T>from);
 
         List<TypeHierarchyNode<T>> classNodes = descriptors.map(this::buildClassPath).collect(Collectors.toList());
-        return new TypeSearchNode<>(null, combineClassNodes(classNodes));
+        return new TypeSearchNode<>(this.propertiesExtractor.<T>getPropertiesDescriptor(superclass), combineClassNodes(classNodes));
     }
 
     @NotNull

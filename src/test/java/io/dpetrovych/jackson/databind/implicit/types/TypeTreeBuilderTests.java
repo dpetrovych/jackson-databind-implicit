@@ -21,8 +21,7 @@ public class TypeTreeBuilderTests {
             VariableReward.class
         }, Reward.class, this.propertiesExtractor).build();
 
-        assertThat(tree.getProperties()).isEmpty();
-        assertThat(tree.descriptor).isNull();
+        assertThat(tree.descriptor.type).isEqualTo(Reward.class);
         List<TypeSearchNode<Reward>> children = tree.getChildren();
         assertThat(children.size()).isEqualTo(1);
 
@@ -40,8 +39,7 @@ public class TypeTreeBuilderTests {
             VariableReward.class
         }, Reward.class, this.propertiesExtractor).build();
 
-        assertThat(tree.getProperties()).isEmpty();
-        assertThat(tree.descriptor).isNull();
+        assertThat(tree.descriptor.type).isEqualTo(Reward.class);
         List<TypeSearchNode<Reward>> children = tree.getChildren();
         assertThat(children.size()).isEqualTo(2);
 
