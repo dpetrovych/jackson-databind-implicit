@@ -50,8 +50,14 @@ public class SamePropsTests extends BaseCanSerialize<SamePropsTests.Reward> {
     public void deserialize__fails() {
         Exception exception = assertThrows(JsonMappingException.class, () -> mapper.readValue(getExampleJsonArray(), new TypeReference<Reward[]>() {}));
 
-        assertThat(exception.getMessage()).isEqualTo(
+        assertThat(exception.getMessage()).satisfiesAnyOf(
+            msg -> assertThat(msg).isEqualTo(
                 "2 types matches the same object: [" + MinMaxReward.class.getName() + ", "+ MaxMinReward.class.getName() + "]\n" +
-                " at [Source: (String)\"[{\"max\":50,\"min\":40},{\"min\":35,\"max\":45}]\"; line: 1, column: 20] (through reference chain: java.lang.Object[][0])");
+                " at [Source: (String)\"[{\"max\":50,\"min\":40},{\"min\":35,\"max\":45}]\"; line: 1, column: 20] (through reference chain: java.lang.Object[][0])"),
+
+            msg -> assertThat(msg).isEqualTo(
+                "2 types matches the same object: [" + MaxMinReward.class.getName() + ", "+ MinMaxReward.class.getName() + "]\n" +
+                " at [Source: (String)\"[{\"max\":50,\"min\":40},{\"min\":35,\"max\":45}]\"; line: 1, column: 20] (through reference chain: java.lang.Object[][0])")
+            );
     }
 }
