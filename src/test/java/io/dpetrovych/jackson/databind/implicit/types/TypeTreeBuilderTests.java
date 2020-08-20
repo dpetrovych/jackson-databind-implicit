@@ -22,13 +22,12 @@ public class TypeTreeBuilderTests {
         }, Reward.class, this.propertiesExtractor).build();
 
         assertThat(tree.descriptor.type).isEqualTo(Reward.class);
-        List<TypeSearchNode<Reward>> children = tree.getChildren();
+        List<TypeSearchNode<Reward>> children = tree.children;
         assertThat(children.size()).isEqualTo(1);
 
         assertThat(children).hasOnlyOneElementSatisfying(node -> {
             assertThat(node.descriptor.type).isEqualTo(VariableReward.class);
-            assertThat(node.getChildren()).isEmpty();
-            assertThat(node.getProperties()).contains("min", "max");
+            assertThat(node.children).isEmpty();
         });
     }
 
@@ -40,21 +39,19 @@ public class TypeTreeBuilderTests {
         }, Reward.class, this.propertiesExtractor).build();
 
         assertThat(tree.descriptor.type).isEqualTo(Reward.class);
-        List<TypeSearchNode<Reward>> children = tree.getChildren();
+        List<TypeSearchNode<Reward>> children = tree.children;
         assertThat(children.size()).isEqualTo(2);
 
         assertThat(children)
             .filteredOn(node -> node.descriptor.type.equals(VariableReward.class))
             .hasOnlyOneElementSatisfying(node -> {
-                assertThat(node.getChildren()).isEmpty();
-                assertThat(node.getProperties()).contains("min", "max");
+                assertThat(node.children).isEmpty();
             });
 
         assertThat(children)
             .filteredOn(node -> node.descriptor.type.equals(FixedReward.class))
             .hasOnlyOneElementSatisfying(node -> {
-                assertThat(node.getChildren()).isEmpty();
-                assertThat(node.getProperties()).contains("value");
+                assertThat(node.children).isEmpty();
             });
     }
 
@@ -67,27 +64,25 @@ public class TypeTreeBuilderTests {
             Rectangle.class
         }, Shape.class, this.propertiesExtractor).build();
 
-        List<TypeSearchNode<Shape>> children = tree.getChildren();
+        List<TypeSearchNode<Shape>> children = tree.children;
 
         assertThat(children).hasSize(2);
         assertThat(children)
             .filteredOn(node -> node.descriptor.type.equals(Frame.class))
             .hasOnlyOneElementSatisfying(node -> {
                 assertThat(node.descriptor).isExactlyInstanceOf(SubTypeDescriptor.class);
-                assertThat(node.getProperties()).contains("height", "width");
-                assertThat(node.getChildren().size()).isEqualTo(1);
-                assertThat(node.getChildren().get(0).descriptor).isExactlyInstanceOf(SubTypeDescriptor.class);
-                assertThat(node.getChildren().get(0).descriptor.type).isEqualTo(Rectangle.class);
+                assertThat(node.children.size()).isEqualTo(1);
+                assertThat(node.children.get(0).descriptor).isExactlyInstanceOf(SubTypeDescriptor.class);
+                assertThat(node.children.get(0).descriptor.type).isEqualTo(Rectangle.class);
             });
 
         assertThat(children)
             .filteredOn(node -> node.descriptor.type.equals(Circle.class))
             .hasOnlyOneElementSatisfying(node -> {
                 assertThat(node.descriptor).isExactlyInstanceOf(SubTypeDescriptor.class);
-                assertThat(node.getProperties()).contains("radius");
-                assertThat(node.getChildren().size()).isEqualTo(1);
-                assertThat(node.getChildren().get(0).descriptor).isExactlyInstanceOf(SubTypeDescriptor.class);
-                assertThat(node.getChildren().get(0).descriptor.type).isEqualTo(Disk.class);
+                assertThat(node.children.size()).isEqualTo(1);
+                assertThat(node.children.get(0).descriptor).isExactlyInstanceOf(SubTypeDescriptor.class);
+                assertThat(node.children.get(0).descriptor.type).isEqualTo(Disk.class);
             });
     }
 
@@ -99,26 +94,24 @@ public class TypeTreeBuilderTests {
         }, Shape.class, this.propertiesExtractor).build();
 
 
-        List<TypeSearchNode<Shape>> children = tree.getChildren();
+        List<TypeSearchNode<Shape>> children = tree.children;
         assertThat(children).hasSize(2);
         assertThat(children)
             .filteredOn(node -> node.descriptor.type.equals(Frame.class))
             .hasOnlyOneElementSatisfying(node -> {
                 assertThat(node.descriptor).isExactlyInstanceOf(PropertiesDescriptor.class);
-                assertThat(node.getProperties()).contains("height", "width");
-                assertThat(node.getChildren().size()).isEqualTo(1);
-                assertThat(node.getChildren().get(0).descriptor).isExactlyInstanceOf(SubTypeDescriptor.class);
-                assertThat(node.getChildren().get(0).descriptor.type).isEqualTo(Rectangle.class);
+                assertThat(node.children.size()).isEqualTo(1);
+                assertThat(node.children.get(0).descriptor).isExactlyInstanceOf(SubTypeDescriptor.class);
+                assertThat(node.children.get(0).descriptor.type).isEqualTo(Rectangle.class);
             });
 
         assertThat(children)
             .filteredOn(node -> node.descriptor.type.equals(Circle.class))
             .hasOnlyOneElementSatisfying(node -> {
                 assertThat(node.descriptor).isExactlyInstanceOf(PropertiesDescriptor.class);
-                assertThat(node.getProperties()).contains("radius");
-                assertThat(node.getChildren().size()).isEqualTo(1);
-                assertThat(node.getChildren().get(0).descriptor).isExactlyInstanceOf(SubTypeDescriptor.class);
-                assertThat(node.getChildren().get(0).descriptor.type).isEqualTo(Disk.class);
+                assertThat(node.children.size()).isEqualTo(1);
+                assertThat(node.children.get(0).descriptor).isExactlyInstanceOf(SubTypeDescriptor.class);
+                assertThat(node.children.get(0).descriptor.type).isEqualTo(Disk.class);
             });
     }
 }

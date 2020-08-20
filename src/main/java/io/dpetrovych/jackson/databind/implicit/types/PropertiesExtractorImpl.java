@@ -21,12 +21,8 @@ public class PropertiesExtractorImpl implements PropertiesExtractor {
     public <T> PropertiesDescriptor<? extends T> getPropertiesDescriptor(Class<?> type) {
         JavaType javaType = config.getTypeFactory().constructType(type);
         BeanDescription beanDescription = this.config.introspect(javaType);
-
-        @SuppressWarnings("unchecked")
-        Class<? extends T> beanClass = (Class<? extends T>)beanDescription.getBeanClass();
-        Set<String> properties = getProperties(beanDescription);
-
-        return new PropertiesDescriptor<>(properties, beanClass);
+        //noinspection unchecked
+        return new PropertiesDescriptor<>(getProperties(beanDescription), (Class<? extends T>)type);
     }
 
     @NotNull

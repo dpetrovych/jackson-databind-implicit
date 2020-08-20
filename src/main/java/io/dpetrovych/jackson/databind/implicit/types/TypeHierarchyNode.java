@@ -8,9 +8,9 @@ import java.util.Collections;
 import java.util.List;
 
 class TypeHierarchyNode<T> {
-    public final Class<?> type;
-    public final SubTypeDescriptor<? extends T> descriptor;
-    public final TypeHierarchyNode<T> child;
+    final Class<?> type;
+    final SubTypeDescriptor<? extends T> descriptor;
+    final TypeHierarchyNode<T> child;
 
     public TypeHierarchyNode(@NotNull SubTypeDescriptor<? extends T> descriptor) {
         this.type = descriptor.type;
