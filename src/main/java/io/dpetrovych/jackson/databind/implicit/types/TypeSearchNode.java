@@ -1,24 +1,28 @@
 package io.dpetrovych.jackson.databind.implicit.types;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import static io.dpetrovych.jackson.databind.implicit.helpers.SetHelper.*;
-import static java.util.Collections.emptyList;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static java.util.stream.Collectors.toList;
 
 public class TypeSearchNode<T> {
+    @NotNull
     public final PropertiesDescriptor<? extends T> descriptor;
-    private final Collection<TypeSearchNode<T>> children;
+    @Nullable
+    private final List<TypeSearchNode<T>> children;
 
-    public TypeSearchNode(@NotNull PropertiesDescriptor<? extends T> descriptor, Collection<TypeSearchNode<T>> children) {
+    public TypeSearchNode(@NotNull PropertiesDescriptor<? extends T> descriptor, @Nullable List<TypeSearchNode<T>> children) {
+        if (!descriptor.isSubType() && children == null)
+            throw new IllegalArgumentException("Non SubTypeDescriptor nodes shall have children");
+
         this.children = children;
         this.descriptor = descriptor;
     }
@@ -28,47 +32,58 @@ public class TypeSearchNode<T> {
     }
 
     public Optional<PropertiesDescriptor<? extends T>> find(@NotNull Collection<String> fields, boolean ignoreUnknownFields) throws TooManyTypesFoundException {
-        return findRecursive(fields, ignoreUnknownFields).map(it -> it.node.descriptor);
+        return findRecursive(fields, ignoreUnknownFields).getDescriptor();
     }
 
-    @SuppressWarnings("MethodComplexity")
-    private Optional<FindTypeResult> findRecursive(@NotNull Collection<String> fields, boolean ignoreUnknownFields) throws TooManyTypesFoundException {
+    private TypeSearchResult<T> findRecursive(@NotNull Collection<String> fields, boolean ignoreUnknownFields) throws TooManyTypesFoundException {
         final Set<String> distinctFields = subtract(fields, this.descriptor.properties);
 
-        if (children != null) {
-            List<TypeSearchNode<T>> childrenIntersects = children.stream()
-                .filter(child ->
-                    (children.size() == 1 && !(this.descriptor instanceof SubTypeDescriptor)) ||
-                    (!distinctFields.isEmpty() && intersect(child.descriptor.properties, distinctFields).size() > 0))
-                .collect(toList());
+        if (this.descriptor.isSubType())
+            return findCandidateChild(distinctFields)
+                .map(child -> child.findRecursive(distinctFields, ignoreUnknownFields))
+                .orElseGet(() -> (distinctFields.isEmpty() || ignoreUnknownFields)
+                    ? TypeSearchResult.of(this.descriptor)
+                    : TypeSearchResult.noResult());
 
-            if (childrenIntersects.size() == 1)
-                return childrenIntersects.get(0).findRecursive(distinctFields, ignoreUnknownFields);
+        // else if node is not a configured subType (children >= 1)
+        if (children.size() == 1)
+            return children.get(0).findRecursive(distinctFields, ignoreUnknownFields);
 
-            if (childrenIntersects.size() > 1 || !(this.descriptor instanceof SubTypeDescriptor))
-                throw new TooManyTypesFoundException(children.stream().map(it -> it.descriptor.type).collect(toList()));
-        }
+        // children > 1
+        return findCandidateChild(distinctFields)
+            .map(child -> child.findRecursive(distinctFields, ignoreUnknownFields))
+            .orElseThrow(() -> new TooManyTypesFoundException(getNodesClasses(children)));
+    }
 
-        return this.descriptor instanceof SubTypeDescriptor && (distinctFields.isEmpty() || ignoreUnknownFields)
-            ? of(new FindTypeResult(this))
-            : empty();
+    @NotNull
+    private Optional<TypeSearchNode<T>> findCandidateChild(Set<String> distinctFields) {
+        if (distinctFields.isEmpty() || children == null)
+            return Optional.empty();
+
+        List<TypeSearchNode<T>> childrenIntersects = children.stream()
+            .filter(child -> intersect(child.descriptor.properties, distinctFields).size() > 0)
+            .collect(toList());
+
+        if (childrenIntersects.isEmpty())
+            return Optional.empty();
+
+        if (childrenIntersects.size() == 1)
+            return Optional.of(childrenIntersects.get(0));
+
+        throw new TooManyTypesFoundException(getNodesClasses(childrenIntersects));
     }
 
     List<TypeSearchNode<T>> getChildren() {
         return this.children != null
             ? new ArrayList<>(this.children)
-            : emptyList();
+            : Collections.emptyList();
     }
 
     List<String> getProperties() {
         return new ArrayList<>(this.descriptor.properties);
     }
 
-    public class FindTypeResult {
-        public final TypeSearchNode<T> node;
-
-        public FindTypeResult(TypeSearchNode<T> node) {
-            this.node = node;
-        }
+    private static <T> Class<?>[] getNodesClasses(List<TypeSearchNode<T>> nodes) {
+        return nodes.stream().map(it -> it.descriptor.type).toArray(Class[]::new);
     }
 }

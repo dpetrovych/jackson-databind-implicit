@@ -12,7 +12,6 @@ import io.dpetrovych.jackson.databind.implicit.types.TypeSearchNode;
 import io.dpetrovych.jackson.databind.implicit.types.TooManyTypesFoundException;
 import io.dpetrovych.jackson.databind.implicit.types.TypeSearchTreeBuilder;
 
-import java.util.Collection;
 import java.util.Set;
 
 import static io.dpetrovych.jackson.databind.implicit.ErrorMessages.createNoTypesMessage;

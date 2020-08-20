@@ -18,7 +18,11 @@ public class PropertiesDescriptor<T> {
 
     @Override
     public String toString() {
-        return "{properties=" + properties + ", beanClass=" + type + "}";
+        return "{properties=" + properties + ", beanClass=" + type + ", isSubType=" + isSubType() + "}";
+    }
+
+    public boolean isSubType() {
+        return false;
     }
 }
 

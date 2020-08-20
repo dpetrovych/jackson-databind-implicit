@@ -9,6 +9,11 @@ public final class SubTypeDescriptor<T> extends PropertiesDescriptor<T> {
         super(properties, type);
     }
 
+    @Override
+    public boolean isSubType() {
+        return true;
+    }
+
     public static <T> SubTypeDescriptor<? extends T> from(PropertiesDescriptor<? extends T> descriptor) {
         return new SubTypeDescriptor<>(descriptor.properties, descriptor.type);
     }

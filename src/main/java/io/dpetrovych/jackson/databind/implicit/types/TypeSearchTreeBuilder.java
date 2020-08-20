@@ -56,7 +56,7 @@ public class TypeSearchTreeBuilder<T> {
             .findFirst();
     }
 
-    private Collection<TypeSearchNode<T>> combineClassNodes(@NotNull Collection<TypeHierarchyNode<T>> classNodes) {
+    private List<TypeSearchNode<T>> combineClassNodes(@NotNull Collection<TypeHierarchyNode<T>> classNodes) {
         if (classNodes.isEmpty())
             return null;
 
